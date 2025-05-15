@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
-  "private": true,
+  "private": false,
   "exports": {
     ".": "./src/index.ts",
     "./contracts/*": "./src/contracts/*.ts"
