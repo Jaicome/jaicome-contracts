@@ -158,7 +158,7 @@ const deleteOptionById = oc
   .route({ path: "/options/{id}", method: "DELETE" })
   .input(z.uuid());
 
-const catalogVariant = oc.prefix("/variants").router({
+export const catalogVariantContract = oc.prefix("/variants").router({
   createVariation,
   updateVariation,
   deleteVariation,
@@ -167,7 +167,7 @@ const catalogVariant = oc.prefix("/variants").router({
   deleteVariationById,
 });
 
-const catalogModifier = oc.prefix("/modifiers").router({
+export const catalogModifierContract = oc.prefix("/modifiers").router({
   createModifier,
   updateModifier,
   deleteModifier,
@@ -176,7 +176,7 @@ const catalogModifier = oc.prefix("/modifiers").router({
   deleteModifierById,
 });
 
-const catalogOption = oc.prefix("/options").router({
+export const catalogOptionContract = oc.prefix("/options").router({
   createOption,
   updateOption,
   deleteOption,
@@ -185,7 +185,7 @@ const catalogOption = oc.prefix("/options").router({
   deleteOptionById,
 });
 
-const catalogItem = oc.prefix("/catalog").router({
+export const catalogItemContract = oc.prefix("/catalog").router({
   createItem,
   updateItem,
   deleteItem,
@@ -194,8 +194,8 @@ const catalogItem = oc.prefix("/catalog").router({
 });
 
 export const catalogContract = oc.prefix("/catalog").router({
-  catalogItem,
-  catalogVariant,
-  catalogModifier,
-  catalogOption,
+  catalogItemContract,
+  catalogVariantContract,
+  catalogModifierContract,
+  catalogOptionContract,
 });
