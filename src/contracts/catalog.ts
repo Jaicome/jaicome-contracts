@@ -1,66 +1,17 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod/v4";
+import { translated } from "@/types/translated";
+import {
+  CatalogItem,
+  CatalogModifier,
+  CatalogOptions,
+  CatalogVariation,
+} from "@/types/catalog";
 
-export const Money = () =>
-  z.object({
-    amount: z.number(),
-    currency: z.string().length(3),
-  });
-
-export const CatalogVariation = () =>
-  z.object({
-    id: z.uuid(),
-    priceMoney: Money,
-    sku: z.number().optional(), // Adjust as needed if nullable
-    upc: z.number().optional(), // Adjust as needed if nullable
-    pricingType: z.enum(["FIXED", "VARIABLE"]),
-    imageIds: z.array(z.string()),
-    ordinal: z.int().optional(),
-  });
-
-export const Transtaled = () => z.record(z.string(), z.string());
-
-export const CatalogModifier = () =>
-  z.object({
-    id: z.uuid().optional(),
-    name: z.record(z.string(), z.string()),
-    description: z.record(z.string(), z.string()),
-    values: z.array(
-      z.object({
-        name: Transtaled(),
-        description: Transtaled(),
-        ordinal: z.int().optional(),
-      })
-    ),
-  });
-
-export const CatalogOptions = () =>
-  z.object({
-    id: z.uuid().optional(),
-    options: z.array(
-      z.object({
-        name: Transtaled(),
-      })
-    ),
-  });
-
-export const CatalogItem = () =>
-  z.object({
-    id: z.uuid(),
-    name: Transtaled(), // Language, text
-    description: z.record(z.string(), z.string()).optional(),
-    type: z.enum(["FOOD_AND_BEV"]),
-    categoryId: z.string(),
-    imageIds: z.array(z.string()),
-    variantIds: z.array(z.uuid()).optional(),
-    modifierIds: z.array(z.uuid()).optional(),
-    optionIds: z.array(z.uuid()).optional(),
-  });
-
-const createCatalogItem = oc
-  .route({ path: "/", method: "POST" })
+const createItem = oc
+  .route({ path: "/items", method: "POST" })
   .input(
-    CatalogItem().extend({
+    CatalogItem.extend({
       id: z.uuid().optional(),
     })
   )
@@ -70,50 +21,181 @@ const createCatalogItem = oc
     })
   );
 
-const updateCatalogItem = oc.route({ path: "/", method: "PATCH" }).input(
+const updateItem = oc.route({ path: "/items/{id}", method: "PATCH" }).input(
   z.object({
     id: z.uuid(),
-    data: CatalogItem().omit({ id: true }),
+    data: CatalogItem.omit({ id: true }),
   })
 );
 
 const getAllItems = oc
-  .route({ path: "/", method: "POST" })
+  .route({ path: "/items", method: "POST" })
   .input(z.void())
   .output(
     z.object({
       id: z.uuid(),
-      name: Transtaled(), // Language, text
-      description: z.record(z.string(), z.string()).optional(),
+      name: translated, // Language, text
+      description: translated.optional(),
       type: z.enum(["FOOD_AND_BEV"]),
       categoryId: z.string(),
       photos: z.array(z.url()),
     })
   );
 
-const getById = oc
-  .route({ path: "/{id}", method: "POST" })
+const getItemById = oc
+  .route({ path: "/items/{id}", method: "POST" })
   .input(z.uuid())
   .output(
     z.object({
       id: z.uuid(),
-      name: Transtaled(), // Language, text
-      description: z.record(z.string(), z.string()).optional(),
+      name: translated, // Language, text
+      description: translated.optional(),
       // type: z.enum(["FOOD_AND_BEV"]),
       categoryId: z.string(),
       photos: z.array(z.url()),
-      variations: z.array(CatalogVariation()),
-      modifiers: z.array(CatalogModifier()),
-      options: z.array(CatalogOptions()),
+      variations: z.array(CatalogVariation),
+      modifiers: z.array(CatalogModifier),
+      options: z.array(CatalogOptions),
     })
   );
 
-const deleteCatalogItem = oc.input(z.object({ id: z.uuid() }));
+const deleteItem = oc.input(z.object({ id: z.uuid() })).output(z.boolean());
 
-export const catalogItem = oc.prefix("/catalog").router({
-  create: createCatalogItem,
-  update: updateCatalogItem,
-  delete: deleteCatalogItem,
-  all: getAllItems,
-  getById,
+const createVariation = oc.route({ path: "/variations", method: "POST" }).input(
+  CatalogVariation.extend({
+    id: z.uuid().optional(),
+  })
+);
+
+const updateVariation = oc
+  .route({ path: "/variations/{id}", method: "PATCH" })
+  .input(
+    z.object({
+      id: z.uuid(),
+      data: CatalogVariation.omit({ id: true }),
+    })
+  );
+
+const deleteVariation = oc
+  .input(z.object({ id: z.uuid() }))
+  .output(z.boolean());
+
+const getAllVariations = oc
+  .route({ path: "/variations", method: "POST" })
+  .input(z.void())
+  .output(z.array(CatalogVariation));
+
+const getVariationById = oc
+  .route({ path: "/variations/{id}", method: "POST" })
+  .input(z.uuid())
+  .output(CatalogVariation);
+
+const deleteVariationById = oc
+  .route({ path: "/variations/{id}", method: "DELETE" })
+  .input(z.uuid());
+
+const createModifier = oc.route({ path: "/modifiers", method: "POST" }).input(
+  CatalogModifier.extend({
+    id: z.uuid().optional(),
+  })
+);
+
+const updateModifier = oc
+  .route({ path: "/modifiers/{id}", method: "PATCH" })
+  .input(
+    z.object({
+      id: z.uuid(),
+      data: CatalogModifier.omit({ id: true }),
+    })
+  );
+
+const deleteModifier = oc
+  .route({ path: "/modifiers/{id}", method: "DELETE" })
+  .input(z.uuid());
+
+const getAllModifiers = oc
+  .route({ path: "/modifiers", method: "POST" })
+  .input(z.void())
+  .output(z.array(CatalogModifier));
+
+const getModifierById = oc
+  .route({ path: "/modifiers/{id}", method: "POST" })
+  .input(z.uuid())
+  .output(CatalogModifier);
+
+const deleteModifierById = oc
+  .route({ path: "/modifiers/{id}", method: "DELETE" })
+  .input(z.uuid());
+
+const createOption = oc.route({ path: "/options", method: "POST" }).input(
+  CatalogOptions.extend({
+    id: z.uuid().optional(),
+  })
+);
+
+const updateOption = oc.route({ path: "/options/{id}", method: "PATCH" }).input(
+  z.object({
+    id: z.uuid(),
+    data: CatalogOptions.omit({ id: true }),
+  })
+);
+
+const deleteOption = oc
+  .route({ path: "/options/{id}", method: "DELETE" })
+  .input(z.uuid());
+
+const getAllOptions = oc
+  .route({ path: "/options", method: "POST" })
+  .input(z.void())
+  .output(z.array(CatalogOptions));
+
+const getOptionById = oc
+  .route({ path: "/options/{id}", method: "POST" })
+  .input(z.uuid())
+  .output(CatalogOptions);
+
+const deleteOptionById = oc
+  .route({ path: "/options/{id}", method: "DELETE" })
+  .input(z.uuid());
+
+const catalogVariant = oc.prefix("/variants").router({
+  createVariation,
+  updateVariation,
+  deleteVariation,
+  getAllVariations,
+  getVariationById,
+  deleteVariationById,
+});
+
+const catalogModifier = oc.prefix("/modifiers").router({
+  createModifier,
+  updateModifier,
+  deleteModifier,
+  getAllModifiers,
+  getModifierById,
+  deleteModifierById,
+});
+
+const catalogOption = oc.prefix("/options").router({
+  createOption,
+  updateOption,
+  deleteOption,
+  getAllOptions,
+  getOptionById,
+  deleteOptionById,
+});
+
+const catalogItem = oc.prefix("/catalog").router({
+  createItem,
+  updateItem,
+  deleteItem,
+  getAllItems,
+  getItemById,
+});
+
+export const catalogContract = oc.prefix("/catalog").router({
+  catalogItem,
+  catalogVariant,
+  catalogModifier,
+  catalogOption,
 });
