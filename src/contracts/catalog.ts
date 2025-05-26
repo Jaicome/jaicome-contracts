@@ -30,7 +30,11 @@ const updateItem = oc.route({ path: "/items/{id}", method: "PATCH" }).input(
 
 const getAllItems = oc
   .route({ path: "/items", method: "POST" })
-  .input(z.void())
+  .input(
+    z.object({
+      merchantId: z.uuid(),
+    })
+  )
   .output(
     z.object({
       id: z.uuid(),
@@ -82,7 +86,7 @@ const deleteVariation = oc
 
 const getAllVariations = oc
   .route({ path: "/variations", method: "POST" })
-  .input(z.void())
+  .input(z.object({ merchantId: z.uuid() }))
   .output(z.array(CatalogVariation));
 
 const getVariationById = oc
@@ -115,12 +119,12 @@ const deleteModifier = oc
 
 const getAllModifiers = oc
   .route({ path: "/modifiers", method: "POST" })
-  .input(z.void())
+  .input(z.object({ merchantId: z.uuid() }))
   .output(z.array(CatalogModifier));
 
 const getModifierById = oc
   .route({ path: "/modifiers/{id}", method: "POST" })
-  .input(z.uuid())
+  .input(z.object({ merchantId: z.uuid(), id: z.uuid() }))
   .output(CatalogModifier);
 
 const deleteModifierById = oc
@@ -146,7 +150,7 @@ const deleteOption = oc
 
 const getAllOptions = oc
   .route({ path: "/options", method: "POST" })
-  .input(z.void())
+  .input(z.object({ merchantId: z.uuid() }))
   .output(z.array(CatalogOptions));
 
 const getOptionById = oc
@@ -193,9 +197,11 @@ export const catalogItemContract = oc.prefix("/catalog").router({
   getItemById,
 });
 
-export const catalogContract = oc.prefix("/catalog").router({
-  catalogItemContract,
-  catalogVariantContract,
-  catalogModifierContract,
-  catalogOptionContract,
-});
+export const catalogContract = oc
+  .prefix("/merchant/{merchantId}/catalog")
+  .router({
+    catalogItemContract,
+    catalogVariantContract,
+    catalogModifierContract,
+    catalogOptionContract,
+  });
