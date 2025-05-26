@@ -36,14 +36,16 @@ const getAllItems = oc
     })
   )
   .output(
-    z.object({
-      id: z.uuid(),
-      name: translated, // Language, text
-      description: translated.optional(),
-      type: z.enum(["FOOD_AND_BEV"]),
-      categoryId: z.string(),
-      photos: z.array(z.url()),
-    })
+    z.array(
+      z.object({
+        id: z.uuid(),
+        name: translated, // Language, text
+        description: translated.optional(),
+        type: z.enum(["FOOD_AND_BEV"]),
+        categoryId: z.string(),
+        photoUrls: z.array(z.url()),
+      })
+    )
   );
 
 const getItemById = oc
