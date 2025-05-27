@@ -1,4 +1,5 @@
 import { aiContract } from "./contracts/ai";
+import { merchantContract } from "./contracts/merchant";
 import { payoutContract } from "./contracts/payout";
 import { catalogContract } from "./contracts/catalog";
 
@@ -9,4 +10,5 @@ export const contract = {
   ai: aiContract,
   payout: payoutContract,
   catalog: catalogContract,
+  merchant: merchantContract,
 };
